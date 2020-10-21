@@ -1,0 +1,619 @@
+---
+title: "Leitura dos Dados"
+author: "Grupo 3 - Desafio 2"
+date: "10/18/2020"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+# Pacotes necessários
+library(jsonlite)
+library(tidyverse)
+library(tictoc)
+library(plyr)
+library(feather)
+```
+
+
+```{r funcoes}
+ler_json_flat <- function(x) fromJSON(x, flatten = TRUE)
+
+juntar_filtrar <- function(arquivos) {
+  map(arquivos, ler_json_flat) %>% 
+    rbind.fill() %>% 
+    dplyr::mutate(id = row_number()) %>% 
+    unnest(dadosBasicos.assunto) %>%
+    filter(grau == "JE")
+}
+```
+
+# Juizados Especiais da Justiça Estadual
+Optamos por focar na Justiça Estadual, por ser a porta de entrada e onde está localizada a maior parte da movimentação processual brasileira. 
+Para poder ajustar algoritmos de machine learning e fazer análises mais precisos, optamos também por focar nos Juizados Especiais, por possuir um grande diversidade de processos e partes, gerande grande inconsistência dos dados. O código e análise podem ser adaptados para outros graus. 
+
+## Acre
+
+```{r ac}
+ac_files <- list.files("justica_estadual/processos-tjac", pattern = "json", full.names = T)
+
+ac_tudo <- juntar_filtrar(ac_files)
+
+ac_movimentos <- ac_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(ac_movimentos)) {
+  if (!is.null(ac_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  ac_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(ac_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+ac_movimentos <- ac_movimentos %>% unnest(movimento)
+  
+ac_dados_basicos <- ac_tudo %>% select(-movimento)
+```
+
+## Alagoas
+
+```{r al}
+al_files <- list.files("justica_estadual/processos-tjal", pattern = "json", full.names = T)
+
+al_tudo <- juntar_filtrar(al_files)
+
+al_movimentos <- al_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(al_movimentos)) {
+  if (!is.null(al_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  al_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(al_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+al_movimentos <- al_movimentos %>% unnest(movimento)
+  
+al_dados_basicos <- al_tudo %>% select(-movimento)
+```
+
+## Amazonas
+
+```{r am}
+am_files <- list.files("justica_estadual/processos-tjam", pattern = "json", full.names = T)
+
+am_tudo <- juntar_filtrar(am_files)
+
+am_movimentos <- am_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(am_movimentos)) {
+  if (!is.null(am_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  am_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(am_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+am_movimentos <- am_movimentos %>% unnest(movimento)
+  
+am_dados_basicos <- am_tudo %>% select(-movimento)
+```
+
+## Amapá
+
+```{r ap}
+ap_files <- list.files("justica_estadual/processos-tjap", pattern = "json", full.names = T)
+
+ap_tudo <- juntar_filtrar(ap_files)
+
+ap_movimentos <- ap_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(ap_movimentos)) {
+  if (!is.null(ap_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  ap_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(ap_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+ap_movimentos <- ap_movimentos %>% unnest(movimento)
+  
+ap_dados_basicos <- ap_tudo %>% select(-movimento)
+```
+
+## Bahia
+
+```{r ba}
+ba_files <- list.files("justica_estadual/processos-tjba", pattern = "json", full.names = T)
+
+ba_tudo <- juntar_filtrar(ba_files)
+
+ba_movimentos <- ba_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(ba_movimentos)) {
+  if (!is.null(ba_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  ba_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(ba_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+ba_movimentos <- ba_movimentos %>% unnest(movimento)
+  
+ba_dados_basicos <- ba_tudo %>% select(-movimento)
+```
+
+## Ceará
+
+```{r ce}
+ce_files <- list.files("justica_estadual/processos-tjce", pattern = "json", full.names = T)
+
+ce_tudo <- juntar_filtrar(ce_files)
+
+ce_movimentos <- ce_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(ce_movimentos)) {
+  if (!is.null(ce_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  ce_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(ce_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+ce_movimentos <- ce_movimentos %>% unnest(movimento)
+  
+ce_dados_basicos <- ce_tudo %>% select(-movimento)
+```
+
+## Distrito Federal
+
+```{r df}
+df_files <- list.files("justica_estadual/processos-tjdft", pattern = "json", full.names = T)
+
+df_tudo <- juntar_filtrar(df_files)
+
+df_movimentos <- df_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(df_movimentos)) {
+  if (!is.null(df_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  df_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(df_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+df_movimentos <- df_movimentos %>% unnest(movimento)
+  
+df_dados_basicos <- df_tudo %>% select(-movimento)
+
+```
+
+## Espírito Santo
+
+```{r es}
+es_files <- list.files("justica_estadual/processos-tjes", pattern = "json", full.names = T)
+
+es_tudo <- juntar_filtrar(es_files)
+
+es_movimentos <- es_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(es_movimentos)) {
+  if (!is.null(es_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  es_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(es_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+es_movimentos <- es_movimentos %>% unnest(movimento)
+  
+es_dados_basicos <- es_tudo %>% select(-movimento)
+```
+
+## Goiás
+
+```{r go}
+go_files <- list.files("justica_estadual/processos-tjgo", pattern = "json", full.names = T)
+
+go_tudo <- juntar_filtrar(go_files)
+
+go_movimentos <- go_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(go_movimentos)) {
+  if (!is.null(go_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  go_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(go_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+go_movimentos <- go_movimentos %>% unnest(movimento)
+  
+go_dados_basicos <- go_tudo %>% select(-movimento)
+```
+
+## Maranhão
+
+```{r ma}
+ma_files <- list.files("justica_estadual/processos-tjma", pattern = "json", full.names = T)
+
+ma_tudo <- juntar_filtrar(ma_files)
+
+ma_movimentos <- ma_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(ma_movimentos)) {
+  if (!is.null(ma_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  ma_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(ma_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+ma_movimentos <- ma_movimentos %>% unnest(movimento)
+  
+ma_dados_basicos <- ma_tudo %>% select(-movimento)
+```
+
+## Minas Gerais
+
+```{r mg}
+mg_files <- list.files("justica_estadual/processos-tjmg", pattern = "json", full.names = T)
+
+mg_tudo <- juntar_filtrar(mg_files)
+
+mg_movimentos <- mg_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(mg_movimentos)) {
+  if (!is.null(mg_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  mg_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(mg_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+mg_movimentos <- mg_movimentos %>% unnest(movimento)
+  
+mg_dados_basicos <- mg_tudo %>% select(-movimento)
+```
+
+## Mato Grosso do Sul
+
+```{r ms}
+ms_files <- list.files("justica_estadual/processos-tjms", pattern = "json", full.names = T)
+
+ms_tudo <- juntar_filtrar(ms_files)
+
+ms_movimentos <- ms_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(ms_movimentos)) {
+  if (!is.null(ms_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  ms_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(ms_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+ms_movimentos <- ms_movimentos %>% unnest(movimento)
+  
+ms_dados_basicos <- ms_tudo %>% select(-movimento)
+```
+
+## Mato Grosso
+
+```{r mt}
+mt_files <- list.files("justica_estadual/processos-tjmt", pattern = "json", full.names = T)
+
+mt_tudo <- juntar_filtrar(mt_files)
+
+mt_movimentos <- mt_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(mt_movimentos)) {
+  if (!is.null(mt_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  mt_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(mt_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+mt_movimentos <- mt_movimentos %>% unnest(movimento)
+  
+mt_dados_basicos <- mt_tudo %>% select(-movimento)
+```
+
+## Pará
+
+```{r pa}
+pa_files <- list.files("justica_estadual/processos-tjpa", pattern = "json", full.names = T)
+
+pa_tudo <- juntar_filtrar(pa_files)
+
+pa_movimentos <- pa_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(pa_movimentos)) {
+  if (!is.null(pa_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  pa_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(pa_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+pa_movimentos <- pa_movimentos %>% unnest(movimento)
+  
+pa_dados_basicos <- pa_tudo %>% select(-movimento)
+```
+
+## Paraíba
+
+```{r pb}
+pb_files <- list.files("justica_estadual/processos-tjpb", pattern = "json", full.names = T)
+
+pb_tudo <- juntar_filtrar(pb_files)
+
+pb_movimentos <- pb_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(pb_movimentos)) {
+  if (!is.null(pb_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  pb_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(pb_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+pb_movimentos <- pb_movimentos %>% unnest(movimento)
+  
+pb_dados_basicos <- pb_tudo %>% select(-movimento)
+```
+
+## Pernambuco
+
+```{r pe}
+pe_files <- list.files("justica_estadual/processos-tjpe", pattern = "json", full.names = T)
+
+pe_tudo <- juntar_filtrar(pe_files)
+
+pe_movimentos <- pe_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(pe_movimentos)) {
+  if (!is.null(pe_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  pe_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(pe_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+pe_movimentos <- pe_movimentos %>% unnest(movimento)
+  
+pe_dados_basicos <- pe_tudo %>% select(-movimento)
+```
+
+## Piauí
+
+```{r pi}
+pi_files <- list.files("justica_estadual/processos-tjpi", pattern = "json", full.names = T)
+
+pi_tudo <- juntar_filtrar(pi_files)
+
+pi_movimentos <- pi_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(pi_movimentos)) {
+  if (!is.null(pi_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  pi_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(pi_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+pi_movimentos <- pi_movimentos %>% unnest(movimento)
+  
+pi_dados_basicos <- pi_tudo %>% select(-movimento)
+```
+
+## Paraná
+
+```{r pr}
+pr_files <- list.files("justica_estadual/processos-tjpr", pattern = "json", full.names = T)
+
+pr_tudo <- juntar_filtrar(pr_files)
+
+pr_movimentos <- pr_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(pr_movimentos)) {
+  if (!is.null(pr_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  pr_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(pr_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+pr_movimentos <- pr_movimentos %>% unnest(movimento)
+  
+pr_dados_basicos <- pr_tudo %>% select(-movimento)
+```
+
+## Rio de Janeiro
+
+```{r rj}
+rj_files <- list.files("justica_estadual/processos-tjrj", pattern = "json", full.names = T)
+
+rj_tudo <- juntar_filtrar(rj_files)
+
+rj_movimentos <- rj_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(rj_movimentos)) {
+  if (!is.null(rj_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  rj_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(rj_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+rj_movimentos <- rj_movimentos %>% unnest(movimento)
+  
+rj_dados_basicos <- rj_tudo %>% select(-movimento)
+```
+
+## Rio Grande do Norte
+
+```{r rn}
+rn_files <- list.files("justica_estadual/processos-tjrn", pattern = "json", full.names = T)
+
+rn_tudo <- juntar_filtrar(rn_files)
+
+rn_movimentos <- rn_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(rn_movimentos)) {
+  if (!is.null(rn_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  rn_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(rn_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+rn_movimentos <- rn_movimentos %>% unnest(movimento)
+  
+rn_dados_basicos <- rn_tudo %>% select(-movimento)
+```
+
+## Rondônia
+
+```{r ro}
+ro_files <- list.files("justica_estadual/processos-tjro", pattern = "json", full.names = T)
+
+ro_tudo <- juntar_filtrar(ro_files)
+
+ro_movimentos <- ro_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(ro_movimentos)) {
+  if (!is.null(ro_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  ro_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(ro_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+ro_movimentos <- ro_movimentos %>% unnest(movimento)
+  
+ro_dados_basicos <- ro_tudo %>% select(-movimento)
+```
+
+## Roraima
+
+```{r rr}
+rr_files <- list.files("justica_estadual/processos-tjrr", pattern = "json", full.names = T)
+
+rr_tudo <- juntar_filtrar(rr_files)
+
+rr_movimentos <- rr_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(rr_movimentos)) {
+  if (!is.null(rr_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  rr_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(rr_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+rr_movimentos <- rr_movimentos %>% unnest(movimento)
+  
+rr_dados_basicos <- rr_tudo %>% select(-movimento)
+```
+
+## Rio Grande do Sul
+
+```{r rs}
+rs_files <- list.files("justica_estadual/processos-tjrs", pattern = "json", full.names = T)
+
+rs_tudo <- juntar_filtrar(rs_files)
+
+rs_movimentos <- rs_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(rs_movimentos)) {
+  if (!is.null(rs_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  rs_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(rs_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+rs_movimentos <- rs_movimentos %>% unnest(movimento)
+  
+rs_dados_basicos <- rs_tudo %>% select(-movimento)
+```
+
+## Santa Catarina
+
+```{r sc}
+sc_files <- list.files("justica_estadual/processos-tjsc", pattern = "json", full.names = T)
+
+sc_tudo <- juntar_filtrar(sc_files)
+
+sc_movimentos <- sc_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(sc_movimentos)) {
+  if (!is.null(sc_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  sc_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(sc_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+sc_movimentos <- sc_movimentos %>% unnest(movimento)
+  
+sc_dados_basicos <- sc_tudo %>% select(-movimento)
+```
+
+## Sergipe
+
+```{r se}
+se_files <- list.files("justica_estadual/processos-tjse", pattern = "json", full.names = T)
+
+se_tudo <- juntar_filtrar(se_files)
+
+se_movimentos <- se_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(se_movimentos)) {
+  if (!is.null(se_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  se_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(se_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+se_movimentos <- se_movimentos %>% unnest(movimento)
+  
+se_dados_basicos <- se_tudo %>% select(-movimento)
+```
+
+
+## São Paulo
+
+```{r sp}
+sp_files <- list.files("justica_estadual/processos-tjsp", pattern = "json", full.names = T)
+
+sp_tudo <- juntar_filtrar(sp_files)
+
+sp_movimentos <- sp_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(sp_movimentos)) {
+  if (!is.null(sp_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  sp_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(sp_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+sp_movimentos <- sp_movimentos %>% unnest(movimento)
+  
+sp_dados_basicos <- sp_tudo %>% select(-movimento)
+```
+
+## Tocantins
+
+```{r to}
+to_files <- list.files("justica_estadual/processos-tjto", pattern = "json", full.names = T)
+
+to_tudo <- juntar_filtrar(to_files)
+
+to_movimentos <- to_tudo %>% distinct(id, .keep_all = TRUE) %>% select(id, siglaTribunal, movimento, millisInsercao)
+
+for (i in 1:nrow(to_movimentos)) {
+  if (!is.null(to_movimentos[["movimento"]][[i]][["tipoDecisao"]])) {
+  to_movimentos[["movimento"]][[i]][["tipoDecisao"]] <- as.character(to_movimentos[["movimento"]][[i]][["tipoDecisao"]])
+  }
+}
+
+to_movimentos <- to_movimentos %>% unnest(movimento)
+  
+to_dados_basicos <- to_tudo %>% select(-movimento)
+```
+
+```{r salvar}
+# for(d in ls(pattern = "_movimentos|_dados_basicos")) { # salvar arquivos
+#   save(list = d, file = paste0(d , ".RData"))
+# }
+
+# lapply(list.files(pattern = "_movimentos\\.RData|_dados_basicos\\.RData"),load,.GlobalEnv) # para ler
+```
+
+## Brasil
+
+```{r dados_basicos}
+brasil_dados_basicos <- ac_dados_basicos %>% rbind.fill(al_dados_basicos) %>% rbind.fill(am_dados_basicos) %>% rbind.fill(ap_dados_basicos) %>%
+  rbind.fill(ba_dados_basicos) %>% rbind.fill(ce_dados_basicos) %>% rbind.fill(df_dados_basicos) %>% rbind.fill(es_dados_basicos) %>%
+  rbind.fill(go_dados_basicos) %>% rbind.fill(ma_dados_basicos) %>% rbind.fill(mg_dados_basicos) %>% rbind.fill(ms_dados_basicos) %>%
+  rbind.fill(mt_dados_basicos) %>% rbind.fill(pa_dados_basicos) %>% rbind.fill(pb_dados_basicos) %>% rbind.fill(pe_dados_basicos) %>%
+  rbind.fill(pi_dados_basicos) %>% rbind.fill(pr_dados_basicos) %>% rbind.fill(rj_dados_basicos) %>% rbind.fill(rn_dados_basicos) %>%
+  rbind.fill(ro_dados_basicos) %>% rbind.fill(rr_dados_basicos) %>% rbind.fill(rs_dados_basicos) %>% rbind.fill(sc_dados_basicos) %>%
+  rbind.fill(se_dados_basicos) %>% rbind.fill(sp_dados_basicos) %>% rbind.fill(to_dados_basicos)
+
+# saveRDS(brasil_dados_basicos, "brasil_dados_basicos.rds")
+
+# write_feather(brasil_dados_basicos, path = "brasil_dados_basicos.feather")
+# write_csv(brasil_dados_basicos, file = "brasil_dados_basicos.csv")
+```
+
+
+```{r movimento}
+brasil_movimentos <- ac_movimentos %>% rbind.fill(al_movimentos) %>% rbind.fill(am_movimentos) %>% rbind.fill(ap_movimentos) %>%
+  rbind.fill(ba_movimentos) %>% rbind.fill(ce_movimentos) %>% rbind.fill(df_movimentos) %>% rbind.fill(es_movimentos) %>%
+  rbind.fill(go_movimentos) %>% rbind.fill(ma_movimentos) %>% rbind.fill(mg_movimentos) %>% rbind.fill(ms_movimentos) %>%
+  rbind.fill(mt_movimentos) %>% rbind.fill(pa_movimentos) %>% rbind.fill(pb_movimentos) %>% rbind.fill(pe_movimentos) %>%
+  rbind.fill(pi_movimentos) %>% rbind.fill(pr_movimentos) %>% rbind.fill(rj_movimentos) %>% rbind.fill(rn_movimentos) %>%
+  rbind.fill(ro_movimentos) %>% rbind.fill(rr_movimentos) %>% rbind.fill(rs_movimentos) %>% rbind.fill(sc_movimentos) %>%
+  rbind.fill(se_movimentos) %>% rbind.fill(sp_movimentos) %>% rbind.fill(to_movimentos) %>% select(-idDocumentoVinculado, -complementoNacional)
+
+# saveRDS(brasil_movimentos, "brasil_movimentos.rds")
+
+# write_feather(brasil_movimentos, path = "brasil_movimentos.feather")
+# write_csv(brasil_movimentos, file = "brasil_movimentos.csv")
+```
+
