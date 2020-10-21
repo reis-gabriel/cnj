@@ -11,34 +11,42 @@ knitr::opts_chunk$set(echo = TRUE)
 # Pacotes necessários
 library(tidyverse)
 library(tictoc)
-library(isofor) #lidevtools::install_github(repo = "Zelazny7/isofor", ref="cran") 
+library(isofor) #devtools::install_github(repo = "Zelazny7/isofor", ref="cran") 
 library(lattice)
-library(AnomalyDetection) #devtools::install_github("twitter/AnomalyDetection")
+library(isotree)
 ```
 
 ```{r leitura}
-dados_bas <- readRDS("brasil_db_tratados.rds" )
-movimentos <- readRDS("brasil_mov_tratados.rds" )
-```
-```{r}
-str(dados_bas)
+dados_bas <- readRDS("brasil_db_tratados.rds" ) %>% distinct(id, siglaTribunal, .keep_all = TRUE)
+movimentos <- readRDS("brasil_mov_tratados.rds" ) %>% distinct(id, siglaTribunal,
+                                                               movimentoNacional.codigoNacional, 
+                                                               dataHora, .keep_all = TRUE)
 ```
 
 ## Isolation Forest
 
 O isolation forest é um algoritmo não supervisionado de detecção de anomalias. Forem testados outros algoritmos e variações de parâmetros. O que se encontra abaixo apresentou resultado mais coerente. 
 
+```{r}
+str(dados_bas)
+```
+
 ```{r iforest_db}
-dados_bas_vars <- c("codigoNacional", "dadosBasicos.totalAssuntos", "dadosBasicos.classeProcessual", "dadosBasicos.orgaoJulgador.instancia",
-                    "dadosBasicos.valorCausa", "dadosBasicos.competencia")
+dados_bas_vars <- c("codigoNacional", "dadosBasicos.totalAssuntos", "dadosBasicos.classeProcessual",
+                    "dadosBasicos.orgaoJulgador.instancia", "dadosBasicos.valorCausa")
 
 iforest_db <- iForest(dados_bas[dados_bas_vars], seed = 3,
-                       nt = 200, phi = 500)
+                       nt = 200, phi = 500, sentinel = -9999999999)
 
 dados_bas$score <- predict(iforest_db, newdata = dados_bas[dados_bas_vars])
 
-dados_bas %>% group_by(siglaTribunal) %>% summarise(score_medio = mean(score)) %>% arrange(desc(score_medio))
+ranking_db <- dados_bas %>% 
+  group_by(siglaTribunal) %>% 
+  summarise(score_medio = mean(score)) %>% 
+  arrange(desc(score_medio))
+ranking_db
 ```
+
 
 ```{r}
 str(movimentos)
@@ -48,7 +56,7 @@ str(movimentos)
 ```{r dif}
 movimentos_dif <- movimentos %>% 
   group_by(siglaTribunal) %>% 
-  arrange(siglaTribunal, millisInsercao) %>% 
+  arrange(siglaTribunal, id, dataHora) %>% 
   mutate(dias_dif = as.numeric((dataHora - lag(dataHora))/3600)) %>% replace_na(list(dias_dif = 0)) %>% ungroup()
 
 str(movimentos_dif)
@@ -57,33 +65,24 @@ str(movimentos_dif)
 ```{r iforest_mov}
 movs_vars <- c("movimentoNacional.codigoNacional", "dias_dif")
 
-iforest_db <- iForest(movimentos_dif[movs_vars], seed = 3,
-                       nt = 200, phi = 2000)
+iforest_mov <- iForest(movimentos_dif[movs_vars], seed = 3,
+                       nt = 200, phi = 500, sentinel = -9999999999)
 
-movimentos_dif$score2 <- predict(iforest_db, newdata = movimentos_dif[movs_vars])
+movimentos_dif$score2 <- predict(iforest_mov, newdata = movimentos_dif[movs_vars])
 
-movimentos_dif %>% group_by(siglaTribunal) %>% summarise(score_medio2 = mean(score2)) %>% arrange(desc(score_medio2))
-
-movimento_anomalias <- AnomalyDetectionVec(river$nitrate,
-                                       period = 12,
-                                       direction = 'both',
-                                       plot = T)
+ranking_mov <- movimentos_dif %>% 
+  group_by(siglaTribunal) %>% 
+  summarise(score_medio2 = mean(score2)) %>%
+  arrange(desc(score_medio2))
+ranking_mov
 ```
 
 
-### Visualização
-```{r}
-seq_codigoNacional <- seq(min(dados_bas$codigoNacional, na.rm = T), 
-                         max(dados_bas$codigoNacional, na.rm = T), length.out = 100)
+```{r ranking final}
+ranking <- ranking_db %>% 
+  left_join(ranking_mov, by = "siglaTribunal") %>% 
+  mutate(score = (score_medio + score_medio2)/2)
+ranking
 
-seq_classe <- seq(min(dados_bas$dadosBasicos.classeProcessual, na.rm = T), 
-                         max(dados_bas$dadosBasicos.classeProcessual, na.rm = T), length.out = 100)
-
-cpn_ca_grid <- expand.grid(codigoNacional = seq_codigoNacional, dadosBasicos.classeProcessual = seq_classe)
-
-cpn_ca_grid$score <- predict(mod1_forest, cpn_ca_grid)
-
-contourplot(score ~ codigoNacional + dadosBasicos.classeProcessual, 
-            data = cpn_ca_grid,
-            region = TRUE)
+#saveRDS(ranking, "ranking.rds")
 ```
