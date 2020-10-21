@@ -1,0 +1,12 @@
+name: cnj_inconsistencias
+title: cnj_inconsistencias
+username:
+account: tukey-reis
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3059061
+bundleId: 3767233
+url: https://tukey.shinyapps.io/cnj_inconsistencias/
+when: 1603298925.64649
+asMultiple: FALSE
+asStatic: FALSE
