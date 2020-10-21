@@ -20,5 +20,5 @@ Para desenvolver a solução, optamos por focar na justiça estadual, por ser a 
 Nossa solução envolve a aplicação de um algoritmo de *machine learning* não supervisionado, que atribui um *score* de inconsistência para os dados do DataJud. Os scores são, então, calculados e agrupados por tribunal, de maneira a chegar em uma pontuação geral e ranking final de inconsistência. 
 O ranking foi pensado para dialogar com o Prêmio CNJ de Qualidade, com pontuações para os tribunais com menor *score* de inconsistência como incentivo para uma maior atenção na inserção correta de dados. 
 
-# A tecnologia
-Foi utilizado o R para toda a análise, por ser linguagem e software livres e para facilitar a utilização e integração pela equipe do CNJ, uma vez que foi dito em *live* que os estatísticos da instituição utilizam R. 
+## A tecnologia
+Foi utilizado o R para toda a análise, por ser linguagem e software livres e para facilitar a utilização e integração pela equipe do CNJ, uma vez que foi dito em *live* que os estatísticos da instituição utilizam R. Foram usados diversos pacotes ao longo da análise, explicitados nos scrips e markdowns do repositório. Para o dashboard final, utilizamos Shiny, um pacote do R para aplicativos web interativos.
